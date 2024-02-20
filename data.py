@@ -4,7 +4,7 @@ import pandas as pd
 DATA_SOURCE = os.path.join("", "data", "data.csv")
 
 
-class Contacts:
+class TwoLevelDataset:
 
     def __init__(self) -> None:
         self._header = (
@@ -12,7 +12,7 @@ class Contacts:
         )
         self._df = (
             pd.read_csv(DATA_SOURCE, index_col=None, header=0)
-            .sort_values(by=["company"], ascending=True)
+            .sort_values(by=[self._header[0]], ascending=True)
             .fillna("")
         )
         self._data = {}
@@ -22,24 +22,24 @@ class Contacts:
         for r in range(len(self._df)):
             row = self._df.iloc[r]
 
-            company = row.iloc[0].title()
-            contact_person = row.iloc[1].title()
+            primary = row.iloc[0].title()
+            secondary = row.iloc[1].title()
 
-            if company not in self._data:
-                self._data[company] = {}
-            if contact_person not in self._data[company]:
-                self._data[company][contact_person] = {}
+            if primary not in self._data:
+                self._data[primary] = {}
+            if secondary not in self._data[primary]:
+                self._data[primary][secondary] = {}
                 for i, col in enumerate(self._header[2:]):
-                    self._data[company][contact_person][col.title()] = row.iloc[i + 2]
+                    self._data[primary][secondary][col.title()] = row.iloc[i + 2]
 
     def get_data(self) -> dict:
         return self._data
 
-    def get_companies(self) -> list:
+    def get_primary_list(self) -> list:
         return list(self._data.keys())
 
-    def get_contacts(self, company: str) -> dict | None:
-        return self._data.get(company)
+    def get_secondary(self, primary: str) -> dict | None:
+        return self._data.get(primary)
 
-    def get_contact_list(self, company) -> list:
-        return list(self.get_contacts(company).keys())
+    def get_secondary_list(self, primary) -> list:
+        return list(self.get_secondary(primary).keys())
