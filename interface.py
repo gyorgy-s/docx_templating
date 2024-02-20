@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
-from data import Contacts
+from tkinter import filedialog
+from data import TwoLevelDataset
 
 
 IMG_PATH = os.path.join("", "data", "logo.png")
@@ -14,11 +15,11 @@ class Gui(tk.Tk):
         self.minsize(500, 1000)
         self.resizable(0, 0)  # Windows only
 
-        self.data = Contacts()
+        self.data = TwoLevelDataset()
 
         self.template = {}
 
-        self.companies = self.data.get_companies()
+        self.companies = self.data.get_primary_list()
         self.companies_filter = None
         self.selected_company = None
         self.contacts = []
@@ -29,7 +30,26 @@ class Gui(tk.Tk):
         self.canvas = tk.Canvas(self, width=100, height=100)
         self.logo = tk.PhotoImage(file=IMG_PATH)
         self.canvas.create_image(0, 0, image=self.logo, anchor="nw")
-        self.canvas.pack(pady=50)
+        self.canvas.pack(pady=25)
+
+        # Set up frame for the input template select.
+        self.input_frame = tk.Frame(
+            self,
+            borderwidth=2,
+            relief="groove",
+            width=50,
+        )
+        self.input_file_button = tk.Button(
+            self.input_frame, text="Select template", command=self.open_template
+        )
+        self.input_file_name = tk.StringVar()
+        self.input_file_label = tk.Entry(
+            self.input_frame, state="readonly", width=50, textvariable=self.input_file_name
+        )
+
+        self.input_frame.pack(pady=25)
+        self.input_file_button.grid(row=0, column=0, sticky="w")
+        self.input_file_label.grid(row=1, column=0)
 
         # Setup a frame with label, entry and listfield for the companies.
         self.company_frame = tk.Frame(self, borderwidth=2, relief="groove")
@@ -41,7 +61,7 @@ class Gui(tk.Tk):
         )
         self.company_list.bind("<<ListboxSelect>>", self.company_selected)
 
-        self.company_frame.pack(pady=50)
+        self.company_frame.pack()
         self.company_filter_label.grid(row=0, column=0)
         self.company_filter_field.grid(row=0, column=1, columnspan=2, sticky="we")
         self.company_yscrollbar.grid(row=1, column=2, sticky="ns")
@@ -57,7 +77,7 @@ class Gui(tk.Tk):
         )
         self.contact_list.bind("<<ListboxSelect>>", self.contact_selected)
 
-        self.contact_frame.pack(pady=50)
+        self.contact_frame.pack(pady=25)
         self.contact_filter_label.grid(row=0, column=0)
         self.contact_filter_field.grid(row=0, column=1, columnspan=2, sticky="we")
         self.contact_yscrollbar.grid(row=1, column=2, sticky="ns")
@@ -65,7 +85,7 @@ class Gui(tk.Tk):
 
         # Setup a frame for the template values.
         self.template_frame = tk.Frame(self, borderwidth=2, relief="groove")
-        self.template_frame.pack(pady=50)
+        self.template_frame.pack()
 
         self.on_tick()
 
@@ -91,7 +111,7 @@ class Gui(tk.Tk):
         selection = self.company_list.curselection()
         if selection:  # Check if a selection has been made
             self.selected_company = self.company_list.get(selection)
-            self.contacts = self.data.get_contact_list(self.selected_company)
+            self.contacts = self.data.get_secondary_list(self.selected_company)
             self.contacts_filter = None
 
     def contact_selected(self, event):
@@ -104,6 +124,12 @@ class Gui(tk.Tk):
             }
             template.update(self.data.get_data()[self.selected_company][self.selected_contact])
             self.generate_template(template)
+
+    def open_template(self):
+        self.input_file_name.set(
+            filedialog.askopenfilename(initialdir="", title="Select template file")
+        )
+        # self.input_file_label.config(textvariable=self.input_file_name)
 
     def on_tick(self):
         if self.company_filter_field.get() != self.companies_filter:
