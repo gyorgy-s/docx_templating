@@ -40,7 +40,7 @@ class Gui(tk.Tk):
             width=50,
         )
         self.input_file_button = tk.Button(
-            self.input_frame, text="Select template", command=self.open_template
+            self.input_frame, text="Select template", command=self._open_template
         )
         self.input_file_name = tk.StringVar()
         self.input_file_label = tk.Entry(
@@ -59,7 +59,7 @@ class Gui(tk.Tk):
         self.company_list = tk.Listbox(
             self.company_frame, yscrollcommand=self.company_yscrollbar.set, width=50
         )
-        self.company_list.bind("<<ListboxSelect>>", self.company_selected)
+        self.company_list.bind("<<ListboxSelect>>", self._company_selected)
 
         self.company_frame.pack()
         self.company_filter_label.grid(row=0, column=0)
@@ -75,7 +75,7 @@ class Gui(tk.Tk):
         self.contact_list = tk.Listbox(
             self.contact_frame, yscrollcommand=self.contact_yscrollbar.set, width=50
         )
-        self.contact_list.bind("<<ListboxSelect>>", self.contact_selected)
+        self.contact_list.bind("<<ListboxSelect>>", self._contact_selected)
 
         self.contact_frame.pack(pady=25)
         self.contact_filter_label.grid(row=0, column=0)
@@ -87,9 +87,9 @@ class Gui(tk.Tk):
         self.template_frame = tk.Frame(self, borderwidth=2, relief="groove")
         self.template_frame.pack()
 
-        self.on_tick()
+        self._on_tick()
 
-    def generate_template(self, labels: dict):
+    def _generate_template(self, labels: dict):
         for i, t in enumerate(labels.items()):
             tk.Label(
                 self.template_frame,
@@ -107,14 +107,14 @@ class Gui(tk.Tk):
             ).grid(row=i, column=1)
             self.template.update({t[0].lower(): t[1]})
 
-    def company_selected(self, event):
+    def _company_selected(self, event):
         selection = self.company_list.curselection()
         if selection:  # Check if a selection has been made
             self.selected_company = self.company_list.get(selection)
             self.contacts = self.data.get_secondary_list(self.selected_company)
             self.contacts_filter = None
 
-    def contact_selected(self, event):
+    def _contact_selected(self, event):
         selection = self.contact_list.curselection()
         if selection:
             self.selected_contact = self.contact_list.get(selection)
@@ -123,15 +123,15 @@ class Gui(tk.Tk):
                 "Contact": self.selected_contact,
             }
             template.update(self.data.get_data()[self.selected_company][self.selected_contact])
-            self.generate_template(template)
+            self._generate_template(template)
 
-    def open_template(self):
+    def _open_template(self):
         self.input_file_name.set(
             filedialog.askopenfilename(initialdir="", title="Select template file")
         )
         # self.input_file_label.config(textvariable=self.input_file_name)
 
-    def on_tick(self):
+    def _on_tick(self):
         if self.company_filter_field.get() != self.companies_filter:
             self.companies_filter = self.company_filter_field.get().lower()
             self.company_list.delete(0, "end")
@@ -146,7 +146,7 @@ class Gui(tk.Tk):
                 if self.contacts_filter in contact.lower():
                     self.contact_list.insert("end", contact)
 
-        self.after(250, self.on_tick)
+        self.after(250, self._on_tick)
 
 
 app = Gui()
