@@ -30,29 +30,49 @@ class Gui(tk.Tk):
         self.canvas = tk.Canvas(self, width=100, height=100)
         self.logo = tk.PhotoImage(file=IMG_PATH)
         self.canvas.create_image(0, 0, image=self.logo, anchor="nw")
-        self.canvas.pack(pady=25)
+        self.canvas.pack(pady=50)
+
+        self.main_frame = tk.Frame(self, width=50)
+        self.main_frame.pack()
 
         # Set up frame for the input template select.
         self.input_frame = tk.Frame(
-            self,
+            self.main_frame,
             borderwidth=2,
             relief="groove",
-            width=50,
         )
         self.input_file_button = tk.Button(
             self.input_frame, text="Select template", command=self._open_template
         )
         self.input_file_name = tk.StringVar()
         self.input_file_label = tk.Entry(
-            self.input_frame, state="readonly", width=50, textvariable=self.input_file_name
+            self.input_frame, state="readonly", textvariable=self.input_file_name
         )
 
-        self.input_frame.pack(pady=25)
-        self.input_file_button.grid(row=0, column=0, sticky="w")
-        self.input_file_label.grid(row=1, column=0)
+        self.input_frame.pack(fill="x")
+        self.input_file_button.pack(anchor="w", padx=5, pady=5)
+        self.input_file_label.pack(anchor="w", fill="x", padx=5, pady=5)
+
+        # Set up frame for the output directory.
+        self.output_frame = tk.Frame(
+            self.main_frame,
+            borderwidth=2,
+            relief="groove",
+        )
+        self.output_folder_button = tk.Button(
+            self.output_frame, text="Select output folder", command=self._open_output_folder
+        )
+        self.output_folder_name = tk.StringVar()
+        self.output_folder_label = tk.Entry(
+            self.output_frame, state="readonly", textvariable=self.output_folder_name
+        )
+
+        self.output_frame.pack(fill="x", pady=25)
+        self.output_folder_button.pack(anchor="w", padx=5, pady=5)
+        self.output_folder_label.pack(anchor="w", fill="x", padx=5, pady=5)
 
         # Setup a frame with label, entry and listfield for the companies.
-        self.company_frame = tk.Frame(self, borderwidth=2, relief="groove")
+        self.company_frame = tk.Frame(self.main_frame, borderwidth=2, relief="groove")
         self.company_filter_label = tk.Label(self.company_frame, text="Company filter:")
         self.company_filter_field = tk.Entry(self.company_frame, width=36)
         self.company_yscrollbar = tk.Scrollbar(self.company_frame, orient="vertical")
@@ -68,7 +88,7 @@ class Gui(tk.Tk):
         self.company_list.grid(row=1, column=0, columnspan=2)
 
         # Setup a frame with label, entry and listfield for the contacts.
-        self.contact_frame = tk.Frame(self, borderwidth=2, relief="groove")
+        self.contact_frame = tk.Frame(self.main_frame, borderwidth=2, relief="groove")
         self.contact_filter_label = tk.Label(self.contact_frame, text="Contact filter:")
         self.contact_filter_field = tk.Entry(self.contact_frame, width=36)
         self.contact_yscrollbar = tk.Scrollbar(self.contact_frame, orient="vertical")
@@ -84,7 +104,7 @@ class Gui(tk.Tk):
         self.contact_list.grid(row=1, column=0, columnspan=2)
 
         # Setup a frame for the template values.
-        self.template_frame = tk.Frame(self, borderwidth=2, relief="groove")
+        self.template_frame = tk.Frame(self.main_frame, borderwidth=2, relief="groove")
         self.template_frame.pack()
 
         self._on_tick()
@@ -129,7 +149,11 @@ class Gui(tk.Tk):
         self.input_file_name.set(
             filedialog.askopenfilename(initialdir="", title="Select template file")
         )
-        # self.input_file_label.config(textvariable=self.input_file_name)
+
+    def _open_output_folder(self):
+        self.output_folder_name.set(
+            filedialog.askdirectory(initialdir="", title="Select output folder")
+        )
 
     def _on_tick(self):
         if self.company_filter_field.get() != self.companies_filter:
