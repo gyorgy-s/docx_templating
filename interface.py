@@ -12,6 +12,10 @@ IMG_PATH = os.path.join("", "data", "logo.png")
 
 class Gui(tk.Tk):
     def __init__(self, data_source: str, template_start: str, template_end: str, *args, **kwargs):
+        """Class for the GUI of a templating app.
+
+        It creates a document based on a template input which is filled out
+        with the data from the selected dataset."""
         super().__init__(*args, **kwargs)
 
         self.title("Word template fill")
@@ -118,6 +122,7 @@ class Gui(tk.Tk):
         self.notification_label.pack(pady=5)
         self.message_label.pack(pady=5)
 
+        # Load the dataset.
         try:
             self.data = TwoLevelDataset(data_source)
         except FileNotFoundError:
@@ -135,6 +140,8 @@ class Gui(tk.Tk):
             self._on_tick()
 
     def _generate_template(self, labels: dict):
+        """Create and display the templates loaded from the dataset
+        that will be looked up in the input template."""
         for i, t in enumerate(labels.items()):
             tk.Label(
                 self.template_frame,
@@ -156,6 +163,8 @@ class Gui(tk.Tk):
             self.generate_button.config(state="normal")
 
     def _company_selected(self, event):
+        """If a company is selected, fill the contact_list with the contacts
+        belonging to the selected company."""
         selection = self.company_list.curselection()
         if selection:  # Check if a selection has been made
             self.selected_company = self.company_list.get(selection)
@@ -163,6 +172,7 @@ class Gui(tk.Tk):
             self.contacts_filter = None
 
     def _contact_selected(self, event):
+        """If a contact is selected, create the template according the data in the dataset."""
         selection = self.contact_list.curselection()
         if selection:
             self.selected_contact = self.contact_list.get(selection)
@@ -176,6 +186,7 @@ class Gui(tk.Tk):
             self._generate_template(template)
 
     def _open_template(self):
+        """Open the filebrowser to select the input template."""
         self.input_file_name.set(
             filedialog.askopenfilename(initialdir="", title="Select template file")
         )
@@ -183,6 +194,7 @@ class Gui(tk.Tk):
             self.generate_button.config(state="normal")
 
     def _open_output_folder(self):
+        """Open the filebrowser to select the output folder."""
         self.output_folder_name.set(
             filedialog.askdirectory(initialdir="", title="Select output folder")
         )
@@ -190,10 +202,8 @@ class Gui(tk.Tk):
             self.generate_button.config(state="normal")
 
     def _generate_document(self):
+        """Generate the document with the templating."""
         try:
-            print(self.get_input_file())
-            print(self.get_output_folder())
-            print(self.template_to_dict())
             document = Templating(
                 self.get_input_file(),
                 self.get_output_folder(),
@@ -209,6 +219,8 @@ class Gui(tk.Tk):
         self.message.set(f"{document.save()}")
 
     def _on_tick(self):
+        """Periodically refreshes the elements of company_list and contact_list
+        based on the filter fields."""
         if self.company_filter_field.get() != self.companies_filter:
             self.companies_filter = self.company_filter_field.get().lower()
             self.company_list.delete(0, "end")
@@ -226,16 +238,19 @@ class Gui(tk.Tk):
         self.after(250, self._on_tick)
 
     def get_input_file(self) -> str | None:
+        """Returns the path for the input file."""
         if not os.path.exists(self.input_file_name.get()):
             raise FileNotFoundError("input file not found")
         return self.input_file_name.get()
 
     def get_output_folder(self) -> str | None:
+        """Returns the path for the output folder."""
         if not os.path.exists(self.output_folder_name.get()):
             raise FileNotFoundError("output folder does not found")
         return self.output_folder_name.get()
 
     def template_to_dict(self) -> dict | None:
+        """Returns a copy of the created templating dict."""
         if not self.template:
             return None
         return self.template.copy()

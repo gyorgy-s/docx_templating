@@ -3,8 +3,6 @@ import re
 
 import docx
 
-from main import TEMPLATE_START, TEMPLATE_END
-
 
 class Templating:
     def __init__(
@@ -15,6 +13,16 @@ class Templating:
         template_end: str = "]",
         templates: dict = {},
     ) -> None:
+        """Class for templating .docx files, creates a .docx document based on the input_file
+        substituting in the data based on the templates.
+
+        Args:
+            input_file (str, optional): Path to the input file. Defaults to None.
+            output_dir (str, optional): Path to the output folder. Defaults to None.
+            template_start (str, optional): Regex pattern for the template start designator. Defaults to "\[".
+            template_end (str, optional): Regex pattern for the template end designator. Defaults to "]".
+            templates (dict, optional): Dict for the templates to substitute. Defaults to {}.
+        """
         self.document = docx.Document(input_file)
         self.output_dir = output_dir
         self.template_start = template_start
@@ -23,6 +31,9 @@ class Templating:
         self.input_elements = self.get_input_elements()
 
     def get_input_elements(self):
+        """Gets the sections and content elements of the .docx file.
+
+        Elements are either docx.paragraph or docx.table"""
         section_components = []
         section_elements = []
         for section in self.document.sections:
@@ -42,6 +53,10 @@ class Templating:
         return section_elements
 
     def sub(self, template: str, value: str):
+        """Substitutes TEMPLATE with VALUE in the document.
+
+        Iterates over the input elements checking if the element contains the TEMPLATE.
+        If so, it iterates over the runs in the elements and substitutes in the VALUE."""
         reg = re.compile(self.template_start + template + self.template_end)
 
         for element in self.input_elements:
@@ -78,7 +93,8 @@ class Templating:
                                 element.runs[i + 2].text = re.sub(
                                     "^" + self.template_end, "", element.runs[i + 2].text
                                 )
-
+            # If the exception id raised the given element does not have a text attribute.
+            # That happes if the element is docx.table instead of docx.paragraph.
             except AttributeError:
                 for row in element.rows:
                     for cell in row.cells:
@@ -122,11 +138,14 @@ class Templating:
                                         )
 
     def sub_templates(self):
+        """Subtitutes all the templates in the documents."""
         for template, value in self.templates.items():
             self.sub(template=template, value=value)
 
     def save(self):
+        """Save the document as 'output.docx' in the designated output folder.
+
+        Returns the path to the file."""
         save_path = os.path.join("", self.output_dir, "output.docx")
-        print(save_path)
         self.document.save(save_path)
         return save_path
