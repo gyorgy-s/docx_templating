@@ -230,9 +230,3 @@ class Gui(tk.Tk):
         if not self.template:
             return None
         return self.template.copy()
-
-
-if __name__ == "__main__":
-    app = Gui()
-
-    app.mainloop()

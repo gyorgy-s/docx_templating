@@ -3,9 +3,7 @@ import re
 
 import docx
 
-
-TEMPLATE_START = "\[\["
-TEMPLATE_END = "]]"
+from main import TEMPLATE_START, TEMPLATE_END
 
 
 class Templating:

@@ -1,7 +1,6 @@
-import os
 import pandas as pd
 
-DATA_SOURCE = os.path.join("", "data", "data.csv")
+from main import DATA_SOURCE
 
 
 class TwoLevelDataset:
