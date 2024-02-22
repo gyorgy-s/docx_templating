@@ -1,7 +1,10 @@
 import os
+import datetime
 import tkinter as tk
 from tkinter import filedialog
+
 from data import TwoLevelDataset
+from templating import Templating
 
 
 IMG_PATH = os.path.join("", "data", "logo.png")
@@ -107,6 +110,21 @@ class Gui(tk.Tk):
         self.template_frame = tk.Frame(self.main_frame, borderwidth=2, relief="groove")
         self.template_frame.pack()
 
+        # Setup export frame.
+        self.export_frame = tk.Frame(self.main_frame)
+        self.generate_button = tk.Button(
+            self.export_frame, text="Generate", command=self._generate_document, state="disabled"
+        )
+        self.notification = tk.StringVar()
+        self.notification_label = tk.Label(self.export_frame, textvariable=self.notification)
+        self.message = tk.StringVar()
+        self.message_label = tk.Label(self.export_frame, textvariable=self.message, wraplength=400)
+
+        self.export_frame.pack(pady=25)
+        self.generate_button.pack(pady=5)
+        self.notification_label.pack(pady=5)
+        self.message_label.pack(pady=5)
+
         self._on_tick()
 
     def _generate_template(self, labels: dict):
@@ -127,6 +145,9 @@ class Gui(tk.Tk):
             ).grid(row=i, column=1)
             self.template.update({t[0].lower(): t[1]})
 
+        if self.input_file_name.get() and self.output_folder_name.get():
+            self.generate_button.config(state="normal")
+
     def _company_selected(self, event):
         selection = self.company_list.curselection()
         if selection:  # Check if a selection has been made
@@ -143,17 +164,40 @@ class Gui(tk.Tk):
                 "Contact": self.selected_contact,
             }
             template.update(self.data.get_data()[self.selected_company][self.selected_contact])
+            if "Date" not in template:
+                template["date"] = datetime.date.today().isoformat()
             self._generate_template(template)
 
     def _open_template(self):
         self.input_file_name.set(
             filedialog.askopenfilename(initialdir="", title="Select template file")
         )
+        if self.output_folder_name.get() and self.template:
+            self.generate_button.config(state="normal")
 
     def _open_output_folder(self):
         self.output_folder_name.set(
             filedialog.askdirectory(initialdir="", title="Select output folder")
         )
+        if self.input_file_name.get() and self.template:
+            self.generate_button.config(state="normal")
+
+    def _generate_document(self):
+        try:
+            print(self.get_input_file())
+            print(self.get_output_folder())
+            print(self.template_to_dict())
+            document = Templating(
+                self.get_input_file(),
+                self.get_output_folder(),
+                self.template_to_dict()
+                )
+        except FileNotFoundError as err:
+            self.notification.set("Error:")
+            self.message.set(err)
+        document.sub_templates()
+        self.notification.set("Templated document successfully created at:")
+        self.message.set(f"{document.save()}")
 
     def _on_tick(self):
         if self.company_filter_field.get() != self.companies_filter:
@@ -172,7 +216,23 @@ class Gui(tk.Tk):
 
         self.after(250, self._on_tick)
 
+    def get_input_file(self) -> str | None:
+        if not os.path.exists(self.input_file_name.get()):
+            raise FileNotFoundError("input file not found")
+        return self.input_file_name.get()
 
-app = Gui()
+    def get_output_folder(self) -> str | None:
+        if not os.path.exists(self.output_folder_name.get()):
+            raise FileNotFoundError("output folder does not found")
+        return self.output_folder_name.get()
 
-app.mainloop()
+    def template_to_dict(self) -> dict | None:
+        if not self.template:
+            return None
+        return self.template.copy()
+
+
+if __name__ == "__main__":
+    app = Gui()
+
+    app.mainloop()
