@@ -3,7 +3,7 @@ import datetime
 import tkinter as tk
 from tkinter import filedialog
 
-from data import TwoLevelDataset, DATA_SOURCE
+from data import TwoLevelDataset
 from templating import Templating
 
 
@@ -11,13 +11,15 @@ IMG_PATH = os.path.join("", "data", "logo.png")
 
 
 class Gui(tk.Tk):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, data_source: str, template_start: str, template_end: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.title("Word template fill")
         self.minsize(500, 1000)
         self.resizable(0, 0)  # Windows only
 
+        self.template_start = template_start
+        self.template_end = template_end
         self.template = {}
 
         # Set up canvas for the logo.
@@ -117,12 +119,12 @@ class Gui(tk.Tk):
         self.message_label.pack(pady=5)
 
         try:
-            self.data = TwoLevelDataset()
+            self.data = TwoLevelDataset(data_source)
         except FileNotFoundError:
             self.input_file_button.config(state="disabled")
             self.output_folder_button.config(state="disabled")
             self.notification.set("Error:")
-            self.message.set(f"Data for templating not found, please check if the correct CSV exists: {DATA_SOURCE}")
+            self.message.set(f"Data for templating not found, please check if the correct CSV exists: {data_source}")
         else:
             self.companies = self.data.get_primary_list()
             self.companies_filter = None
@@ -195,6 +197,8 @@ class Gui(tk.Tk):
             document = Templating(
                 self.get_input_file(),
                 self.get_output_folder(),
+                self.template_start,
+                self.template_end,
                 self.template_to_dict()
                 )
         except FileNotFoundError as err:

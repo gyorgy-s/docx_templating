@@ -7,9 +7,18 @@ from main import TEMPLATE_START, TEMPLATE_END
 
 
 class Templating:
-    def __init__(self, input_file=None, output_dir=None, templates: dict = {}) -> None:
+    def __init__(
+        self,
+        input_file: str = None,
+        output_dir: str = None,
+        template_start: str = "\[",
+        template_end: str = "]",
+        templates: dict = {},
+    ) -> None:
         self.document = docx.Document(input_file)
         self.output_dir = output_dir
+        self.template_start = template_start
+        self.template_end = template_end
         self.templates = templates.copy()
         self.input_elements = self.get_input_elements()
 
@@ -33,7 +42,7 @@ class Templating:
         return section_elements
 
     def sub(self, template: str, value: str):
-        reg = re.compile(TEMPLATE_START + template + TEMPLATE_END)
+        reg = re.compile(self.template_start + template + self.template_end)
 
         for element in self.input_elements:
             try:
@@ -41,27 +50,33 @@ class Templating:
                     for i, run in enumerate(element.runs):
                         if reg.search(run.text):
                             run.text = reg.sub(value, run.text)
-                        elif re.search(TEMPLATE_START + template + "$", run.text):
-                            if re.search("^" + TEMPLATE_END, element.runs[i + 1].text):
-                                run.text = re.sub(TEMPLATE_START + template + "$", value, run.text)
-                                element.runs[i + 1].text = re.sub(
-                                    "^" + TEMPLATE_END, "", element.runs[i + 1].text
+                        elif re.search(self.template_start + template + "$", run.text):
+                            if re.search("^" + self.template_end, element.runs[i + 1].text):
+                                run.text = re.sub(
+                                    self.template_start + template + "$", value, run.text
                                 )
-                        elif re.search(TEMPLATE_START + "$", run.text):
-                            if re.search("^" + template + TEMPLATE_END, element.runs[i + 1].text):
-                                run.text = re.sub(TEMPLATE_START + "$", "", run.text)
                                 element.runs[i + 1].text = re.sub(
-                                    "^" + template + TEMPLATE_END, value, element.runs[i + 1].text
+                                    "^" + self.template_end, "", element.runs[i + 1].text
+                                )
+                        elif re.search(self.template_start + "$", run.text):
+                            if re.search(
+                                "^" + template + self.template_end, element.runs[i + 1].text
+                            ):
+                                run.text = re.sub(self.template_start + "$", "", run.text)
+                                element.runs[i + 1].text = re.sub(
+                                    "^" + template + self.template_end,
+                                    value,
+                                    element.runs[i + 1].text,
                                 )
                             elif element.runs[i + 1].text == template and re.search(
-                                "^" + TEMPLATE_END, element.runs[i + 2].text
+                                "^" + self.template_end, element.runs[i + 2].text
                             ):
-                                run.text = re.sub(TEMPLATE_START + "$", "", run.text)
+                                run.text = re.sub(self.template_start + "$", "", run.text)
                                 element.runs[i + 1].text = re.sub(
                                     template, value, element.runs[i + 1].text
                                 )
                                 element.runs[i + 2].text = re.sub(
-                                    "^" + TEMPLATE_END, "", element.runs[i + 2].text
+                                    "^" + self.template_end, "", element.runs[i + 2].text
                                 )
 
             except AttributeError:
@@ -71,37 +86,39 @@ class Templating:
                             for i, cell_run in enumerate(cell_p.runs):
                                 if reg.search(cell_run.text):
                                     cell_run.text = reg.sub(value, cell_run.text)
-                                elif re.search(TEMPLATE_START + template + "$", cell_run.text):
-                                    if re.search("^" + TEMPLATE_END, element.runs[i + 1].text):
+                                elif re.search(self.template_start + template + "$", cell_run.text):
+                                    if re.search("^" + self.template_end, element.runs[i + 1].text):
                                         cell_run.text = re.sub(
-                                            TEMPLATE_START + template + "$", value, cell_run.text
+                                            self.template_start + template + "$",
+                                            value,
+                                            cell_run.text,
                                         )
                                         element.runs[i + 1].text = re.sub(
-                                            "^" + TEMPLATE_END, "", element.runs[i + 1].text
+                                            "^" + self.template_end, "", element.runs[i + 1].text
                                         )
-                                elif re.search(TEMPLATE_START + "$", cell_run.text):
+                                elif re.search(self.template_start + "$", cell_run.text):
                                     if re.search(
-                                        "^" + template + TEMPLATE_END, element.runs[i + 1].text
+                                        "^" + template + self.template_end, element.runs[i + 1].text
                                     ):
                                         cell_run.text = re.sub(
-                                            TEMPLATE_START + "$", "", cell_run.text
+                                            self.template_start + "$", "", cell_run.text
                                         )
                                         element.runs[i + 1].text = re.sub(
-                                            "^" + template + TEMPLATE_END,
+                                            "^" + template + self.template_end,
                                             value,
                                             element.runs[i + 1].text,
                                         )
                                     elif element.runs[i + 1].text == template and re.search(
-                                        "^" + TEMPLATE_END, element.runs[i + 2].text
+                                        "^" + self.template_end, element.runs[i + 2].text
                                     ):
                                         cell_run.text = re.sub(
-                                            TEMPLATE_START + "$", "", cell_run.text
+                                            self.template_start + "$", "", cell_run.text
                                         )
                                         element.runs[i + 1].text = re.sub(
                                             template, value, element.runs[i + 1].text
                                         )
                                         element.runs[i + 2].text = re.sub(
-                                            "^" + TEMPLATE_END, "", element.runs[i + 2].text
+                                            "^" + self.template_end, "", element.runs[i + 2].text
                                         )
 
     def sub_templates(self):

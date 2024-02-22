@@ -10,5 +10,5 @@ TEMPLATE_START = "\[\["
 TEMPLATE_END = "]]"
 
 if __name__ == "__main__":
-    app = interface.Gui()
+    app = interface.Gui(DATA_SOURCE, TEMPLATE_START, TEMPLATE_END)
     app.mainloop()

@@ -7,17 +7,17 @@ class TwoLevelDataset:
 
     def __init__(self) -> None:
         self._header = (
-            pd.read_csv(DATA_SOURCE, index_col=None, header=None, nrows=1).iloc[0].to_list()
+            pd.read_csv(data_source, index_col=None, header=None, nrows=1).iloc[0].to_list()
         )
         self._df = (
-            pd.read_csv(DATA_SOURCE, index_col=None, header=0)
+            pd.read_csv(data_source, index_col=None, header=0)
             .sort_values(by=[self._header[0]], ascending=True)
             .fillna("")
         )
         self._data = {}
-        self.create_dict()
+        self._create_dict()
 
-    def create_dict(self):
+    def _create_dict(self):
         for r in range(len(self._df)):
             row = self._df.iloc[r]
 
