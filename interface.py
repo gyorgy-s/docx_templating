@@ -11,7 +11,7 @@ IMG_PATH = os.path.join("", "data", "logo.png")
 
 
 class Gui(tk.Tk):
-    def __init__(self, data_source: str, template_start: str, template_end: str, *args, **kwargs):
+    def __init__(self, data_source: str, separator: str, template_start: str, template_end: str, *args, **kwargs):
         """Class for the GUI of a templating app.
 
         It creates a document based on a template input which is filled out
@@ -124,7 +124,7 @@ class Gui(tk.Tk):
 
         # Load the dataset.
         try:
-            self.data = TwoLevelDataset(data_source)
+            self.data = TwoLevelDataset(data_source, separator)
         except FileNotFoundError:
             self.input_file_button.config(state="disabled")
             self.output_folder_button.config(state="disabled")

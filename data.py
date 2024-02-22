@@ -2,7 +2,7 @@ import pandas as pd
 
 
 class TwoLevelDataset:
-    def __init__(self, data_source: str) -> None:
+    def __init__(self, data_source: str, separator: str = ",") -> None:
         """Class to represent a two-level dataset where a primary group
         contains multiple secondary elements, that have a specific set of data.
         For example a series of companies having multiple employees.
@@ -29,10 +29,10 @@ class TwoLevelDataset:
             ...
         }"""
         self._header = (
-            pd.read_csv(data_source, index_col=None, header=None, nrows=1).iloc[0].to_list()
+            pd.read_csv(data_source, index_col=None, header=None, nrows=1, sep=separator).iloc[0].to_list()
         )
         self._df = (
-            pd.read_csv(data_source, index_col=None, header=0)
+            pd.read_csv(data_source, index_col=None, header=0, sep=separator)
             .sort_values(by=[self._header[0]], ascending=True)
             .fillna("")
         )
