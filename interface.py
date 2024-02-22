@@ -3,7 +3,7 @@ import datetime
 import tkinter as tk
 from tkinter import filedialog
 
-from data import TwoLevelDataset
+from data import TwoLevelDataset, DATA_SOURCE
 from templating import Templating
 
 
@@ -18,16 +18,7 @@ class Gui(tk.Tk):
         self.minsize(500, 1000)
         self.resizable(0, 0)  # Windows only
 
-        self.data = TwoLevelDataset()
-
         self.template = {}
-
-        self.companies = self.data.get_primary_list()
-        self.companies_filter = None
-        self.selected_company = None
-        self.contacts = []
-        self.contacts_filter = None
-        self.selected_contact = None
 
         # Set up canvas for the logo.
         self.canvas = tk.Canvas(self, width=100, height=100)
@@ -125,7 +116,21 @@ class Gui(tk.Tk):
         self.notification_label.pack(pady=5)
         self.message_label.pack(pady=5)
 
-        self._on_tick()
+        try:
+            self.data = TwoLevelDataset()
+        except FileNotFoundError:
+            self.input_file_button.config(state="disabled")
+            self.output_folder_button.config(state="disabled")
+            self.notification.set("Error:")
+            self.message.set(f"Data for templating not found, please check if the correct CSV exists: {DATA_SOURCE}")
+        else:
+            self.companies = self.data.get_primary_list()
+            self.companies_filter = None
+            self.selected_company = None
+            self.contacts = []
+            self.contacts_filter = None
+            self.selected_contact = None
+            self._on_tick()
 
     def _generate_template(self, labels: dict):
         for i, t in enumerate(labels.items()):
