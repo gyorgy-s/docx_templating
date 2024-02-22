@@ -182,7 +182,7 @@ class Gui(tk.Tk):
             }
             template.update(self.data.get_data()[self.selected_company][self.selected_contact])
             if "Date" not in template:
-                template["date"] = datetime.date.today().isoformat()
+                template["Date"] = datetime.date.today().isoformat()
             self._generate_template(template)
 
     def _open_template(self):
