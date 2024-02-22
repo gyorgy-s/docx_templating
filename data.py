@@ -4,8 +4,7 @@ from main import DATA_SOURCE
 
 
 class TwoLevelDataset:
-
-    def __init__(self) -> None:
+    def __init__(self, data_source: str) -> None:
         self._header = (
             pd.read_csv(data_source, index_col=None, header=None, nrows=1).iloc[0].to_list()
         )
